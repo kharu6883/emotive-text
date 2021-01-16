@@ -1,0 +1,17 @@
+.editPnl {
+	position: absolute;
+	top: 100px;
+	left: 100px;
+	height: 70%;
+	width: 80%;
+	background: green;
+}
+
+.settingsPnl {
+	position: absolute;
+	top: 100px;
+	right: 100px;
+	height: 70%;
+	width: 20%;
+	background: red;
+}

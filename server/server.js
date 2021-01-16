@@ -18,7 +18,7 @@ async function quickStart(fileName) {
 
     const [result] = await client.faceDetection(fileName);
     const faces = result.faceAnnotations;
-    console.log('Faces:');
+
     faces.forEach((face, i) => {
         console.log(`  Face #${i + 1}:`);
         console.log(`    Joy: ${face.joyLikelihood}`);
@@ -28,4 +28,6 @@ async function quickStart(fileName) {
     });
 }
 
-quickStart('./test.jpg');
+app.get('/', (req, res) => {
+    res.send("Hello World!");
+})

@@ -12,7 +12,7 @@ class Launch extends Component {
 			<React.Fragment>
 				<div className="title">Emotive Writing</div>
 				<div className="intro">
-					<h1>Welcome to Emotive Writing!</h1>
+					<h1>Welcome</h1>
 					<h2>Introduction </h2>
 				</div>
 				<div className="userInput">

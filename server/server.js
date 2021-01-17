@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const { features } = require('process');
 const router = express.Router();
 
 const PORT = 3000;
@@ -11,6 +12,7 @@ app.listen(PORT, () => {
     console.log("Server is running on port: " + PORT);
 });
 
+
 async function getEmotion(fileName) {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = "./credentials-69a069f361eb.json"
 
@@ -19,15 +21,23 @@ async function getEmotion(fileName) {
 
     const [result] = await client.faceDetection(fileName);
     const faces = result.faceAnnotations;
-
-    faces.forEach((face, i) => {
-        console.log(`  Face #${i + 1}:`);
-        console.log(`    Joy: ${face.joyLikelihood}`);
-        console.log(`    Anger: ${face.angerLikelihood}`);
-        console.log(`    Sorrow: ${face.sorrowLikelihood}`);
-        console.log(`    Surprise: ${face.surpriseLikelihood}`);
-    });
+    
+    return returnLikely(faces[1]);
 }
+
+returnLikely = (face) => {
+    if (face.joyLikelihood >= 3) {
+        return console.log("JOY");
+    } else if (face.angerLikelihood >= 3) {
+        return console.log("ANGER");
+    } else if (face.sorrowLikelihood >= 3) {
+        return console.log("SORROW");
+    } else if (face.surpriseLikelihood >= 3) {
+        return console.log("SURPRISE");
+    } else {
+        return console.log("NEUTRAL");
+    }
+};
 
 async function getSpeechText(fileName) {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = "./credentials-69a069f361eb.json"
@@ -77,5 +87,10 @@ app.get('/get-text', (req, res, err) => {
 
 
 app.get('/', (req, res) => {
-    res.send(textToSpeech('Welcome.wav'));
+    
+    res.send(getEmotion('test.jpg').then(emotion => {return emotion}));
+    
+    //res.send(console.log(getEmotion('test.jpg')));
+    
+    //res.send(textToSpeech('Welcome.wav'));
 });

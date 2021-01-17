@@ -7,7 +7,6 @@ class cloudSvc {
     }
 
     async getEmotion(fileName) {
-        const client = new 
         
     }
 

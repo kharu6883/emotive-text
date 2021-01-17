@@ -98,8 +98,6 @@ async function getSpeechText(fileName) {
 }
 
 
-
-
 app.get('/get-emotion', (req, res, err)=> {
     try {
         return res.send(getEmotion('test.jpg'));
@@ -108,7 +106,7 @@ app.get('/get-emotion', (req, res, err)=> {
 
 app.get('/get-text', (req, res, err) => {
     try {
-        return res.send(getSpeechText('test.jpg'))
+        return res.send(getSpeechText('Welcome.wav'))
     } catch {console.log(err)};
 });
 

@@ -34,8 +34,8 @@ class Textbox extends Component {
 		return (
 			<React.Fragment>
 				<div className={"textbox"}>
-					<h1>hello</h1>
-					<h2>Introduction </h2>
+					<h1>Speech Transcription</h1>
+
 					<p className="fontChange">{this.props.transcript}</p>
 					{/* <Recorder
 						record={true}

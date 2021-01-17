@@ -1,8 +1,5 @@
-import React, { Component } from "react";
+import React from "react";
 import Webcam from "react-webcam";
-// import MicRecorder from "mic-recorder-to-mp3";
-
-// const Mp3Recorder = new MicRecorder({ bitRate: 128 });
 
 const videoConstraints = {
 	width: 300,
@@ -87,4 +84,5 @@ const WebcamCapture = () => {
 		</>
 	);
 };
+
 export default WebcamCapture;

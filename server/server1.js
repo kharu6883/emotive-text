@@ -3,15 +3,77 @@ const app = express();
 const bodyParser = require('body-parser');
 const { features } = require('process');
 const { maxHeaderSize } = require('http');
+const multer = require('multer');
 const router = express.Router();
 
 const PORT = 5000;
 
+
+let allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Acess-Control-Allow-Headers', '*');
+    next();
+}
+
 app.use(bodyParser.json());
+app.use(allowCrossDomain);
 
 app.listen(PORT, () => {
     console.log("Server is running on port: " + PORT);
 });
+/*
+async function callAnnotateImage(file) {
+    var imageFile = fs.readFileSync(file);
+    var encoded = Buffer.from(imageFile).toString('base64');
+
+    const request = {
+        "image": {
+            "content": encoded
+        },
+        "features": [
+            {
+                "type": "FACE_DETECTION"
+            }
+        ]
+    };
+
+    try {
+        const call = await client.annotateImage(request);
+        return call;
+    } catch(error) {
+        return console.error(error);
+    }
+}
+
+async function getEmotion(fileName) {
+    const vision = require('@google-cloud/vision');
+    const credentials = require('./auth/creds.json');
+    const client = new vision.ImageAnnotatorClient({credentials});
+
+    const fs = require('fs');
+
+    var imageFile = fs.readFileSync(fileName);
+    var encoded = Buffer.from(imageFile).toString('base64');
+
+    const request = {
+        "image": {
+            "content": encoded
+        },
+        "features": [
+            {
+                "type": "FACE_DETECTION"
+            }
+        ]
+    };
+
+    try {
+        let response = await client.annotateImage(request);
+        console.log(response);
+    } catch(error) {
+        return console.error(error);
+    }
+}
+*/
 
 async function getEmotion(fileName) {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = "./auth/creds.json";
@@ -21,11 +83,15 @@ async function getEmotion(fileName) {
 
     const [result] = await client.faceDetection(fileName);
     const faces = result.faceAnnotations;
-    
-    return returnLikely(faces[0]);
+
+    return client.faceDetection(fileName).then((res) => {
+        return res[0].joyLikelihood;
+    });
 }
 
-returnLikely = (face) => {
+
+
+function returnLikely(face) {
 
     // translate Likelyhood to number
     likelyNum = (str) => {
@@ -44,8 +110,6 @@ returnLikely = (face) => {
         }
     }
 
-    console.log(likelyNum(face.joyLikelihood));
-
     let emotions = [
         ["JOY", likelyNum(face.joyLikelihood)],
         ["ANGER", likelyNum(face.angerLikelihood)],
@@ -54,22 +118,19 @@ returnLikely = (face) => {
     ];  
 
     if (emotions[0][1] == emotions[1][1] == emotions[2][1] == emotions[3][1]) {
-        return "NEUTRAL";
+        return console.log("NEUTRAL");
     } else {
         let emotionMax = Math.max(likelyNum(face.joyLikelihood), likelyNum(face.angerLikelihood), likelyNum(face.sorrowLikelihood), likelyNum(face.surpriseLikelihood));
-        let emotion = "NEUTRAL";
     
         emotions.forEach((emotion) => {
             if (emotion[1] == emotionMax) {
-                //console.log(emotion[0]);
-                emotion = emotion[0];
+                return emotion[0];
             }
         });
-
-        return emotion;
     }
-};
+}
 
+// not needed
 async function getSpeechText(fileName) {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = "./credentials-69a069f361eb.json"
 
@@ -102,23 +163,53 @@ async function getSpeechText(fileName) {
     return transcription;
 }
 
+// posts
+
+const multerMid = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 1048576,
+    },
+});
+  
+app.disable('x-powered-by')
+app.use(multerMid.single('file'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: false}))
+
+const Cloud = require('@google-cloud/storage')
+const path = require('path');
+
+  
+app.post('/uploads', async (req, res, next) => {
+    try {
+      const myFile = req.file
+      const imageUrl = await uploadImage(myFile)
+      res
+        .status(200)
+        .json({
+          message: "Upload was successful",
+          data: imageUrl
+        })
+    } catch (error) {
+      next(error);
+    }
+});
 
 
+// HTTP Requests
 
-app.get('/get-emotion', async (req, res, err) => {
-    let emotion = await getEmotion('./test.jpg');
-    res.send({ emotion: emotion });
+app.get('/get-emotion', (req, res, err)=> {
+    console.log(getEmotion('test.jpg'));
+    res.send({ emotion: JSON.stringify(getEmotion('test.jpg')) });
 });
 
 app.get('/get-text', (req, res, err) => {
     try {
-        return res.send(getSpeechText('test.jpg'))
-    } catch {
-        console.log(err)
-    };
+        return res.send(getSpeechText('Welcome.wav'))
+    } catch {console.log(err)};
 });
 
 app.get('/', (req, res) => {
-    
     res.send(getEmotion('test.jpg').then(emotion => {return (emotion)}));
 });

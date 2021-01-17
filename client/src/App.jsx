@@ -1,4 +1,4 @@
-import Launch from "./component/launch.jsx";
+import Launch from "./component/launch/launch.jsx";
 import Recording from "./component/recording/recording.jsx";
 import Edit from "./component/edit/edit.jsx";
 import { BrowserRouter, Switch, Route } from "react-router-dom";

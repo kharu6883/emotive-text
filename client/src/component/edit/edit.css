@@ -4,7 +4,7 @@
 	left: 100px;
 	height: 70%;
 	width: 80%;
-	background: green;
+	background: rgb(109, 218, 109);
 }
 
 .settingsPnl {
@@ -13,5 +13,5 @@
 	right: 100px;
 	height: 70%;
 	width: 20%;
-	background: red;
+	background: rgb(223, 140, 140);
 }

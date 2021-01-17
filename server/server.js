@@ -2,16 +2,16 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const { features } = require('process');
+const { maxHeaderSize } = require('http');
 const router = express.Router();
 
-const PORT = 3000;
+const PORT = 5000;
 
 app.use(bodyParser.json());
 
 app.listen(PORT, () => {
     console.log("Server is running on port: " + PORT);
 });
-
 
 async function getEmotion(fileName) {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = "./credentials-69a069f361eb.json"
@@ -22,20 +22,46 @@ async function getEmotion(fileName) {
     const [result] = await client.faceDetection(fileName);
     const faces = result.faceAnnotations;
     
-    return returnLikely(faces[1]);
+    //console.log(faces[0]);
+    return returnLikely(faces[0]);
 }
 
 returnLikely = (face) => {
-    if (face.joyLikelihood >= 3) {
-        return console.log("JOY");
-    } else if (face.angerLikelihood >= 3) {
-        return console.log("ANGER");
-    } else if (face.sorrowLikelihood >= 3) {
-        return console.log("SORROW");
-    } else if (face.surpriseLikelihood >= 3) {
-        return console.log("SURPRISE");
-    } else {
+
+    // translate Likelyhood to number
+    likelyNum = (str) => {
+        if (str == 'UNKNOWN') {
+            return 0;
+        } else if (str == 'VERY_UNLIKELY') {
+            return 1;
+        } else if (str == 'UNLIKELY') {
+            return 2;
+        } else if (str == 'POSSIBLE') {
+            return 3;
+        } else if (str == 'LIKELY') {
+            return 4;
+        } else if (str == 'VERY_LIKELY') {
+            return 5;
+        }
+    }
+
+    let emotions = [
+        ["JOY", likelyNum(face.joyLikelihood)],
+        ["ANGER", likelyNum(face.angerLikelihood)],
+        ["SORROW", likelyNum(face.sorrowLikelihood)],
+        ["SURPRISE", likelyNum(face.surpriseLikelihood)]
+    ];  
+
+    if (emotions[0][1] == emotions[1][1] == emotions[2][1] == emotions[3][1]) {
         return console.log("NEUTRAL");
+    } else {
+        let emotionMax = Math.max(likelyNum(face.joyLikelihood), likelyNum(face.angerLikelihood), likelyNum(face.sorrowLikelihood), likelyNum(face.surpriseLikelihood));
+    
+        emotions.forEach((emotion) => {
+            if (emotion[1] == emotionMax) {
+                return emotion[0];
+            }
+        });
     }
 };
 
@@ -69,28 +95,25 @@ async function getSpeechText(fileName) {
         result.alternatives[0].transcript).join('\n');
 
     return transcription;
-
 }
+
+
 
 
 app.get('/get-emotion', (req, res, err)=> {
     try {
-        return res.send(getEmotion(res.locals.picture));
+        return res.send(getEmotion('test.jpg'));
     } catch {console.log(err)};
 });
 
 app.get('/get-text', (req, res, err) => {
     try {
-        return res.send(getSpeechText(res.locals.recording))
+        return res.send(getSpeechText('test.jpg'))
     } catch {console.log(err)};
 });
 
 
 app.get('/', (req, res) => {
     
-    res.send(getEmotion('test.jpg').then(emotion => {return emotion}));
-    
-    //res.send(console.log(getEmotion('test.jpg')));
-    
-    //res.send(textToSpeech('Welcome.wav'));
+    res.send(getEmotion('test.jpg').then(emotion => {return (emotion)}));
 });

@@ -21,30 +21,59 @@ async function getEmotion(fileName) {
 
     const [result] = await client.faceDetection(fileName);
     const faces = result.faceAnnotations;
-    
-    return returnLikely(faces[0]);
+
+    console.log(faces.length);
+
+    console.log('Faces:');
+    faces.forEach((face, i) => {
+        console.log(`  Face #${i + 1}:`);
+        console.log(`    Joy: ${face.joyLikelihood}`);
+        console.log(`    Anger: ${face.angerLikelihood}`);
+        console.log(`    Sorrow: ${face.sorrowLikelihood}`);
+        console.log(`    Surprise: ${face.surpriseLikelihood}`);
+    });
+
+    if(faces.length == 0 ) {
+        return "NEUTRAL"
+    } else {
+        return returnLikely(faces[0]);
+    }
 }
 
-returnLikely = (face) => {
+function returnLikely(face) {
 
-    // translate Likelyhood to number
+    // Returns the level of likelihood of emotions
     likelyNum = (str) => {
-        if (str == 'UNKNOWN') {
-            return 0;
-        } else if (str == 'VERY_UNLIKELY') {
-            return 1;
-        } else if (str == 'UNLIKELY') {
-            return 2;
-        } else if (str == 'POSSIBLE') {
-            return 3;
-        } else if (str == 'LIKELY') {
-            return 4;
-        } else if (str == 'VERY_LIKELY') {
-            return 5;
+        switch(str) {
+            default:
+                return 0;
+                break;
+
+            case "UNKNOWN":
+                return 0;
+                break;
+
+            case "VERY_UNLIKELY":
+                return 1;
+                break;
+
+            case "UNLIKELY":
+                return 2;
+                break;
+
+            case "POSSIBLE":
+                return 3;
+                break;
+
+            case "LIKELY":
+                return 4;
+                break;
+
+            case "VERY_LIKELY":
+                return 5;
+                break;
         }
     }
-
-    console.log(likelyNum(face.joyLikelihood));
 
     let emotions = [
         ["JOY", likelyNum(face.joyLikelihood)],
@@ -57,16 +86,16 @@ returnLikely = (face) => {
         return "NEUTRAL";
     } else {
         let emotionMax = Math.max(likelyNum(face.joyLikelihood), likelyNum(face.angerLikelihood), likelyNum(face.sorrowLikelihood), likelyNum(face.surpriseLikelihood));
-        let emotion = "NEUTRAL";
+        let likelyEmotion = "NEUTRAL";
     
         emotions.forEach((emotion) => {
             if (emotion[1] == emotionMax) {
                 //console.log(emotion[0]);
-                emotion = emotion[0];
+                likelyEmotion = emotion[0];
             }
         });
 
-        return emotion;
+        return likelyEmotion;
     }
 };
 
@@ -102,19 +131,18 @@ async function getSpeechText(fileName) {
     return transcription;
 }
 
-
-
+// HTTP Requests
 
 app.get('/get-emotion', async (req, res, err) => {
-    let emotion = await getEmotion('./test.jpg');
+    let emotion = await getEmotion('./res/angry.jpg');
     res.send({ emotion: emotion });
 });
 
 app.get('/get-text', (req, res, err) => {
     try {
-        return res.send(getSpeechText('test.jpg'))
+        return res.send(getSpeechText('./res/Welcome.wav'));
     } catch {
-        console.log(err)
+        console.log(err);
     };
 });
 

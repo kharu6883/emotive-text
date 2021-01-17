@@ -179,8 +179,15 @@ app.use(bodyParser.urlencoded({extended: false}))
 
 const Cloud = require('@google-cloud/storage')
 const path = require('path');
+process.env.GOOGLE_APPLICATION_CREDENTIALS = "./auth/creds.json";
+const serviceKey = path.join(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
-  
+const { Storage } = Cloud;
+const storage = new Storage({
+    keyFilename: serviceKey,
+    projectId: 
+})
+
 app.post('/uploads', async (req, res, next) => {
     try {
       const myFile = req.file

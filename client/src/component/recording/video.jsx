@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Webcam from "react-webcam";
 import axios from "axios";
 
@@ -18,6 +18,25 @@ const WebcamCapture = () => {
 		// console.log(src={imgSrc} );
 	}, [webcamRef, setImgSrc]);
 
+	useEffect(async () => {
+		const interval = setInterval(() => {
+			capture();
+
+			// axios({
+			// 	method: "post",
+			// 	url: "http://localhost5000/image",
+			// 	data: {
+			// 		img: imgSrc,
+			// 	},
+			// });
+		}, 5000);
+
+		// returned function will be called on component unmount
+		return () => {
+			clearTimeout(this.interval);
+		};
+	}, []);
+
 	return (
 		<>
 			<Webcam
@@ -26,7 +45,6 @@ const WebcamCapture = () => {
 				screenshotFormat="image/jpeg"
 				videoConstraints={videoConstraints}
 			/>
-			<button onClick={capture}>Capture photo</button>
 			{imgSrc && <img src={imgSrc} />}
 		</>
 	);

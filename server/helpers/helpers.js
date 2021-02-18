@@ -1,6 +1,6 @@
 const util = require('util')
 const gc = require('./config/')
-const bucket = gc.bucket('all-mighti') // should be your bucket name
+const bucket = gc.bucket('face-imgs') // should be your bucket name
 
 /**
  *
@@ -11,7 +11,7 @@ const bucket = gc.bucket('all-mighti') // should be your bucket name
  *   "originalname" and "buffer" as keys
  */
 
-export const uploadImage = (file) => new Promise((resolve, reject) => {
+const uploadImage = (file) => new Promise((resolve, reject) => {
   const { originalname, buffer } = file
 
   const blob = bucket.file(originalname.replace(/ /g, "_"))
@@ -29,3 +29,5 @@ export const uploadImage = (file) => new Promise((resolve, reject) => {
   })
   .end(buffer)
 })
+
+module.export = uploadImage;

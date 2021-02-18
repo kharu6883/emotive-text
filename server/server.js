@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const { features } = require("process");
 const { maxHeaderSize } = require("http");
 const router = express.Router();
+const multer = require('multer')
 const cors = require("cors");
 
 const PORT = 5000;
@@ -15,7 +16,7 @@ app.listen(PORT, () => {
 });
 
 async function getEmotion(fileName) {
-	process.env.GOOGLE_APPLICATION_CREDENTIALS = "./auth/creds.json";
+	process.env.GOOGLE_APPLICATION_CREDENTIALS = "./auth/vision-auth.json";
 
 	const vision = require("@google-cloud/vision");
 	const client = new vision.ImageAnnotatorClient();
@@ -140,11 +141,33 @@ async function getSpeechText(fileName) {
 
 	return transcription;
 }
+    
+/*
+const uploadImage = require('./helpers/helpers')
+
+const multerMid = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+})
+
+app.disable('x-powered-by')
+app.use(multerMid.single('file'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: false}))
+*/
 
 // HTTP Requests
 
+app.post('/uploads', async (req, res, next) => {
+  
+})
+
+
+
 app.get("/get-emotion", async (req, res, err) => {
-	let emotion = await getEmotion("./res/angry.jpg");
+	let emotion = await getEmotion("./res/.jpg");
 	res.send({ emotion: emotion });
 });
 
@@ -163,3 +186,28 @@ app.get("/", (req, res) => {
 		})
 	);
 });
+
+/*
+app.post('/uploads', async (req, res, next) => {
+  try {
+    const myFile = req.file
+    const imageUrl = await uploadImage(myFile)
+    res
+      .status(200)
+      .json({
+        message: "Upload was successful",
+        data: imageUrl
+      })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.use((err, req, res, next) => {
+  res.status(500).json({
+    error: err,
+    message: 'Internal server error!',
+  })
+  next()
+})
+*/
